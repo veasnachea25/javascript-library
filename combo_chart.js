@@ -108,22 +108,14 @@ function drawComboChart(config, data) {
 				//.align(0.1)
 				;
 
-    var ChartData = data.map(function(row){
-        row['MstrData'] = row;
+    var ChartData = data.map(function(datum){
+        var row = {};
+        Object.keys(datum).forEach(function(key){
+            row[key] = datum[key];
+        });
+        row['MstrData'] = datum;
         return row;
     });
-
-	// var MinMax = metrics.map(function(metr){ return d3.extent(data, function(d) { return d[metr];}); });
-	// var ymax = d3.max(data, function(d) { return d[metrics[bmi]];});
-	// var ymax = d3.max(data, function(d) { return d3.sum(metrics.map(function(k){ return d[k];}));});
-
-	// var yScale = d3.scaleLinear()
-	// 			.domain([0, ymax])
-	// 			.range([height, 0]);
-
-	// var yScale1 = d3.scaleLinear()
-	// 			.domain([0, 1])
-	// 			.range([height, 0]);
 
 	var yScales = metrics.map(function(metr){ 
         var yDomain = d3.extent(ChartData, function(d) { return d[metr];});
@@ -136,128 +128,44 @@ function drawComboChart(config, data) {
 				.range(yRange);
 	});
 
-    var line = d3.line()
-                 .x(function(d) { return xScale(d[attributes[0]]) + xScale.bandwidth()/2; })
-				 .y(function(d) { return yScales[2](d[metrics[2]]); })
-				 .curve(d3.curveLinear);//curveLinear, curveCardinal
-
-	var stack = d3.stack()
-				//.offset(d3.stackOffsetExpand)
-				.keys([metrics[bmi]])
-				(data);
-
     
 	//Generate axes -------------------------------------------------------------
 	//x-axis: 
-	var gxAxis = gFeature.append("g")
+	gFeature.append("g")
 		.attr("class", "axis x-axis")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(xScale))
         .attr('font-family',fontName)
         .attr('font-size',fontSize_text)
         ;
-
-	// if (config.xaxis.wrap === true){
-	// 	gFeature.selectAll(".tick text")
-	// 		.call(wrap, xScale.bandwidth());
-	// }
-
-	// if(typeof(config.xaxis.rotate) !== "undefined"){ 
-	// 	gFeature.selectAll("text")
-	// 		.style("text-anchor", "end")
-	// 		.attr("dx", "-.8em")
-	// 		.attr("dy", ".15em")
-	// 		.attr("transform", function(d){	return `rotate(-${config.xaxis.rotate})`; });
-	// }
-
-	//y-axis: 
-	// var yAxis = d3.axisLeft(yScales[bmi])
-	// 	.ticks(config.yaxis.numTicks, "s");
-	// 	// .tickFormat(function(d){ return yFormat(d); });
-
-	// var gyAxis = gFeature.append("g")
-	// 	.attr("class", "axis y-axis")
-	// 	.call(yAxis);
-
-	//Edit y axis tick number format
-	// gyAxis.selectAll('.tick text')
-	// 	.each(function(d,i){
-	// 		var self = d3.select(this);
-	// 		var text = self.text().replace('G','B');
-	// 		self.text(text);
-	// 	});
-
-	// text label for the y axis
-	// svg.append("text")
-	// 	.attr("transform", "rotate(-90)")
-	// 	.attr("y", 0)
-	// 	.attr("x", - height / 2)
-	// 	.attr("dy", "1em")
-	// 	.style("text-anchor", "middle")
-	// 	.text("Value");      
-
-	// gFeature.append("g")
-	// 	.attr("class", "axis y-axis")
-    //   	.attr("transform", "translate( " + width + ", 0 )")
-	// 	.call(d3.axisRight(yScales[1]).ticks(5, "%"));
-
-	// //gridline:
-	// if(config.yaxis.showGrid === true){
-	// 	gFeature.append("g")
-	// 		.attr("class", "grid")
-	// 		.call( yAxis.tickFormat("").tickSize(-width) );
-	// }
-
-	//series of bars -----------------------------------------------------------------
-	// var serie = gFeature.selectAll(".serie")
-	// 	.data(stack)
-	// 	.enter().append("g")
-	// 	.attr("class", "serie")
-	// 	.attr("order",function(d,i){ return i; })
-	// 	.attr("fill", function(d,i){ return colors[bmi]; });
-
-	// var rects = serie.selectAll("rect")
-    //     .data(function(d) { return d; })
-    //     .enter().append("rect")
-    //     .attr("x", function(d) { return xScale(d.data[attributes[0]]); })
-    //     .attr("y", function(d) { return yScales[bmi](d[1]); })
-    //     .attr("height", function(d) { return yScales[bmi](d[0]) - yScales[bmi](d[1]); })
-    //     .attr("width", xScale.bandwidth())
-    //     .on("mouseover", ismobile ? null : showTooltip) // on PC
-    //     .on("mousemove", ismobile ? null : moveTooltip) // on PC
-    //     .on("mouseout" , ismobile ? null : hideTooltip) // on PC
-    //     .on("touchstart",ismobile ? showTooltip : null) // on iPad
-    //     .on("touchmove", ismobile ? moveTooltip : null) // on iPad
-    //     .on("touchend" , ismobile ? hideTooltip : null) // on iPad
-    //     .on("click", clickEvent);
-		
-        
-    gFeature.append('g')
-        .attr('class','serie')
-        .selectAll(".bar")
-		.data(ChartData)
-		.enter().append("rect")
-		.attr("class", "bar")
-		.attr("x", function(d) { return xScale(d[attributes[0]]); })
-		.attr("y", height)
-		.attr("width", xScale.bandwidth())
-		.attr("height", 0)
-		.style('fill', colors[bmi])
-        .on("mouseover", ismobile ? null : showTooltip) // on PC
-        .on("mousemove", ismobile ? null : moveTooltip) // on PC
-        .on("mouseout" , ismobile ? null : hideTooltip) // on PC
-        .on("touchstart",ismobile ? showTooltip : null) // on iPad
-        .on("touchmove", ismobile ? moveTooltip : null) // on iPad
-        .on("touchend" , ismobile ? hideTooltip : null) // on iPad
-        .on("click", clickEvent)
-		.transition()
-		.attr("y", function(d){ var dy = d[metrics[bmi]]; return dy >= 0 ? yScales[bmi](dy) : yScales[bmi](0); })
-		.attr("height", function(d) { return Math.abs(yScales[bmi](0) - yScales[bmi](d[metrics[bmi]])); })
-		.delay(function(d,i){ return i*800/data.length; })//ChartData.length
-		.duration(1000)
-        // .ease(d3.easeBack)
-        ;	
-        
+    
+    if(bmi<totalMetrics){
+        gFeature.append('g')
+            .attr('class','serie')
+            .selectAll(".bar")
+            .data(ChartData)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", function(d) { return xScale(d[attributes[0]]); })
+            .attr("y", height)
+            .attr("width", xScale.bandwidth())
+            .attr("height", 0)
+            .style('fill', colors[bmi])
+            .on("mouseover", ismobile ? null : showTooltip) // on PC
+            .on("mousemove", ismobile ? null : moveTooltip) // on PC
+            .on("mouseout" , ismobile ? null : hideTooltip) // on PC
+            .on("touchstart",ismobile ? showTooltip : null) // on iPad
+            .on("touchmove", ismobile ? moveTooltip : null) // on iPad
+            .on("touchend" , ismobile ? hideTooltip : null) // on iPad
+            .on("click", clickEvent)
+            .transition()
+            .attr("y", function(d){ var dy = d[metrics[bmi]]; return dy >= 0 ? yScales[bmi](dy) : yScales[bmi](0); })
+            .attr("height", function(d) { return Math.abs(yScales[bmi](0) - yScales[bmi](d[metrics[bmi]])); })
+            .delay(function(d,i){ return i*800/data.length; })//ChartData.length
+            .duration(1000)
+            // .ease(d3.easeBack)
+            ;	
+    }
 
 	//append line
 	metrics.forEach(function(metr,mi){ if(mi!==bmi){
@@ -467,14 +375,6 @@ function drawComboChart(config, data) {
         } else {
             me.applySelection(selection); //for web
         }
-    }
-
-    function doZoom() {
-        var tx = d3.event.transform.x,
-            ty = d3.event.transform.y,
-            tk = d3.event.transform.k;	
-        gFeature.attr('transform', 'translate(' + tx + ',' + ty + ') scale(' + tk + ')')
-                .style("stroke-width", 0.5 / d3.event.scale + "px");
     }
 
 }
