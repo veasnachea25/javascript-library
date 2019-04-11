@@ -48,7 +48,7 @@ cd existing_folder
 git init
 git remote add origin https://github.com/veasnachea25/javascript-library.git
 git add .
-git commit -m "First Commit"
+git commit -m "Combo Chart"
 git push -u origin master
 
 Existing Git repository
